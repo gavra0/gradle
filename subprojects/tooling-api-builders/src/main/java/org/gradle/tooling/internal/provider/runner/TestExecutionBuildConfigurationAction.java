@@ -21,6 +21,7 @@ import org.gradle.api.Task;
 import org.gradle.api.Transformer;
 import org.gradle.api.internal.GradleInternal;
 import org.gradle.api.internal.project.ProjectState;
+import org.gradle.api.internal.tasks.testing.filter.DefaultTestFilter;
 import org.gradle.api.specs.Specs;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.api.tasks.testing.TestExecutionException;
@@ -43,6 +44,7 @@ import org.gradle.util.internal.CollectionUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -112,8 +114,11 @@ class TestExecutionBuildConfigurationAction implements BuildConfigurationAction 
             }
         }
 
+        Set<Test> cleared = new HashSet<>();
         for (InternalTestPatternSpec patternSpec : testExecutionRequest.getTestPatternSpecs()) {
-            for (Test task : queryTestTasks(patternSpec.getTaskPath())) {
+            Set<Test> tasks = queryTestTasks(patternSpec.getTaskPath());
+            for (Test task : tasks) {
+                maybeClearFilter(task, cleared); // we clear existing filters defined by the build to ensure that the Tooling API client has full control over what tests to execute
                 testTasksToRun.add(task);
                 TestFilter filter = task.getFilter();
                 for (String cls : patternSpec.getClasses()) {
@@ -133,6 +138,21 @@ class TestExecutionBuildConfigurationAction implements BuildConfigurationAction 
         }
 
         return testTasksToRun;
+    }
+
+    private static void maybeClearFilter(Test task, Set<Test> clearedTasks) {
+        if (!clearedTasks.contains(task)) {
+            // clear test task filter
+            TestFilter filter = task.getFilter();
+            filter.setExcludePatterns();
+            filter.setIncludePatterns();
+            filter.setFailOnNoMatchingTests(true);
+            if (filter instanceof DefaultTestFilter) {
+                ((DefaultTestFilter) filter).setCommandLineIncludePatterns(Collections.emptyList());
+            }
+            // mark test task as cleared
+            clearedTasks.add(task);
+        }
     }
 
     private List<Test> configureBuildForTestTasks(TestExecutionRequestAction testExecutionRequest) {
