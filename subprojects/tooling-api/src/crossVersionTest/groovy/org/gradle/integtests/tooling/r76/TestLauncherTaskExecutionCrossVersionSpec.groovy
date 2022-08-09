@@ -23,6 +23,7 @@ import org.gradle.integtests.tooling.fixture.ToolingApiVersion
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.ProjectConnection
 import org.gradle.tooling.TestLauncher
+import spock.lang.IgnoreRest
 
 @TargetGradleVersion(">=7.6")
 @ToolingApiVersion(">=7.6")
@@ -200,6 +201,36 @@ class TestLauncherTaskExecutionCrossVersionSpec extends ToolingApiSpecification 
         taskExecuted(':included:foo')
     }
 
+    @IgnoreRest
+    def "can control the order of tasks and tests"() {
+        setup:
+        buildFile << '''
+            tasks.register('setupTest')
+        '''
+
+        when:
+        withConnection {connection ->
+            TestLauncher testLauncher = connection.newTestLauncher()
+            collectOutputs(testLauncher)
+            testLauncher.forTasks("setupTest").withTestsFor(s -> s.forTaskPath(":test").includeMethod('MyTest', 'pass'))
+            testLauncher.run()
+        }
+
+        then:
+        result.assertTasksExecutedInOrder(':setupTest', ':test')
+
+        when:
+        withConnection {connection ->
+            TestLauncher testLauncher = connection.newTestLauncher()
+            collectOutputs(testLauncher)
+            testLauncher.withTestsFor(s -> s.forTaskPath(":test").includeMethod('MyTest', 'pass')).forTasks('setupTest')
+            testLauncher.run()
+        }
+
+        then:
+        result.assertTasksExecutedInOrder(':test', ':setupTest')
+    }
+
     private def launchTestWithTestFilter(GradleConnector connector, @DelegatesTo(TestLauncher) @ClosureParams(value = SimpleType, options = ['org.gradle.tooling.TestLauncher']) Closure testLauncherSpec) {
         withConnection(connector, connectionConfiguration(testLauncherSpec))
     }
@@ -209,7 +240,7 @@ class TestLauncherTaskExecutionCrossVersionSpec extends ToolingApiSpecification 
     }
 
     private def connectionConfiguration(Closure testLauncherSpec) {
-         { ProjectConnection connection ->
+        {   ProjectConnection connection ->
             TestLauncher testLauncher = connection.newTestLauncher()
             testLauncher.withTaskAndTestMethods(':test', 'MyTest', ['pass'])
             collectOutputs(testLauncher)
