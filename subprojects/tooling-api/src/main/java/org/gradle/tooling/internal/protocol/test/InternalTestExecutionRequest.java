@@ -32,12 +32,6 @@ import java.util.List;
 public interface InternalTestExecutionRequest extends InternalProtocolInterface {
     Collection<InternalTestDescriptor> getTestExecutionDescriptors();
     Collection<String> getTestClassNames();
-
-    /**
-     * @since 7.6
-     */
-    List<String> getTasks();
-
     /**
      * @since 7.6
      */

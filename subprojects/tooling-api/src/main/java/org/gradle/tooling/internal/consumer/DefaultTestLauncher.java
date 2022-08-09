@@ -19,7 +19,6 @@ package org.gradle.tooling.internal.consumer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import org.gradle.api.Action;
 import org.gradle.api.Transformer;
 import org.gradle.tooling.ResultHandler;
@@ -54,7 +53,6 @@ public class DefaultTestLauncher extends AbstractLongRunningOperation<DefaultTes
     private final DefaultDebugOptions debugOptions = new DefaultDebugOptions();
     private final Map<String, List<InternalJvmTestRequest>> tasksAndTests = new HashMap<String, List<InternalJvmTestRequest>>();
     private boolean isRunDefaultTasks = false;
-    private List<String> tasks = new ArrayList<String>();
     private final List<TestPatternSpec> testPatternSpecs = new ArrayList<TestPatternSpec>();
 
     public DefaultTestLauncher(AsyncConsumerActionExecutor connection, ConnectionParameters parameters) {
@@ -163,7 +161,10 @@ public class DefaultTestLauncher extends AbstractLongRunningOperation<DefaultTes
     @Override
     public TestLauncher forTasks(String... tasks) {
         this.isRunDefaultTasks = tasks.length == 0;
-        this.tasks = Lists.newArrayList(tasks);
+        DefaultTestSpec ts = new DefaultTestSpec(false);
+        for (String task : tasks) {
+            testPatternSpecs.add(ts.forTaskPath(task));
+        }
         return this;
     }
 
@@ -191,7 +192,6 @@ public class DefaultTestLauncher extends AbstractLongRunningOperation<DefaultTes
             ImmutableSet.copyOf(internalJvmTestRequests),
             debugOptions, ImmutableMap.copyOf(tasksAndTests),
             isRunDefaultTasks,
-            tasks,
             testPatternSpecs
         );
         connection.run(new ConsumerAction<Void>() {
@@ -221,7 +221,7 @@ public class DefaultTestLauncher extends AbstractLongRunningOperation<DefaultTes
 
     @Override
     public TestLauncher withTestsFor(Action<TestSpec> testSpec) {
-        DefaultTestSpec ts = new DefaultTestSpec();
+        DefaultTestSpec ts = new DefaultTestSpec(true);
         testSpec.execute(ts);
         testPatternSpecs.addAll(ts.getTestPatternSpecs());
         return this;

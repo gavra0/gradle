@@ -28,22 +28,29 @@ import java.util.Map;
 
 public class DefaultTestPatternSpec implements TestPatternSpec, InternalTestPatternSpec {
 
+    private boolean isTestTask;
     private final String taskPath;
     private final List<String> classes;
     private final Map<String, List<String>> methods;
     private final List<String> packages;
     private final List<String> patterns;
 
-    DefaultTestPatternSpec(String taskPath) {
-        this(taskPath, new ArrayList<String>(), new LinkedHashMap<String, List<String>>(), new ArrayList<String>(), new ArrayList<String>());
+    DefaultTestPatternSpec(boolean isTestTask, String taskPath) {
+        this(isTestTask, taskPath, new ArrayList<String>(), new LinkedHashMap<String, List<String>>(), new ArrayList<String>(), new ArrayList<String>());
     }
 
-    public DefaultTestPatternSpec(String taskPath, List<String> classes, Map<String, List<String>> methods,  List<String> packages, List<String> patterns) {
+    public DefaultTestPatternSpec(boolean isTestTask, String taskPath, List<String> classes, Map<String, List<String>> methods,  List<String> packages, List<String> patterns) {
+        this.isTestTask = isTestTask;
         this.taskPath = taskPath;
         this.packages = packages;
         this.classes = classes;
         this.methods = methods;
         this.patterns = patterns;
+    }
+
+    @Override
+    public boolean isTestTask() {
+        return isTestTask;
     }
 
     @Override

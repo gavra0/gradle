@@ -44,7 +44,6 @@ public class TestExecutionRequestAction extends SubscribableBuildAction {
     private final InternalDebugOptions debugOptions;
     private final Map<String, List<InternalJvmTestRequest>> taskAndTests;
     private final boolean isRunDefaultTasks;
-    private final List<String> tasks;
     private final List<InternalTestPatternSpec> testPatternSpecs;
 
     public TestExecutionRequestAction(BuildEventSubscriptions clientSubscriptions,
@@ -54,7 +53,6 @@ public class TestExecutionRequestAction extends SubscribableBuildAction {
                                       Set<InternalJvmTestRequest> internalJvmTestRequests,
                                       InternalDebugOptions debugOptions, Map<String, List<InternalJvmTestRequest>> taskAndTests,
                                       boolean isRunDefaultTasks,
-                                      List<String> tasks,
                                       List<InternalTestPatternSpec> testPatternSpecs) {
         super(clientSubscriptions);
         this.startParameter = startParameter;
@@ -64,7 +62,6 @@ public class TestExecutionRequestAction extends SubscribableBuildAction {
         this.debugOptions = debugOptions;
         this.taskAndTests = taskAndTests;
         this.isRunDefaultTasks = isRunDefaultTasks;
-        this.tasks = tasks;
         this.testPatternSpecs = testPatternSpecs;
     }
 
@@ -79,7 +76,6 @@ public class TestExecutionRequestAction extends SubscribableBuildAction {
             getDebugOptions(testExecutionRequest),
             getTaskAndTests(testExecutionRequest),
             testExecutionRequest.isRunDefaultTasks(false),
-            testExecutionRequest.getTasks(Collections.emptyList()),
             testExecutionRequest.getTestPatternSpecs(Collections.emptyList()));
     }
 
@@ -153,10 +149,6 @@ public class TestExecutionRequestAction extends SubscribableBuildAction {
 
     public Map<String, List<InternalJvmTestRequest>> getTaskAndTests() {
         return taskAndTests;
-    }
-
-    public List<String> getTasks() {
-        return tasks;
     }
 
     public boolean isRunDefaultTasks() {

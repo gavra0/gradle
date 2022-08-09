@@ -23,7 +23,8 @@ import org.gradle.integtests.tooling.fixture.ToolingApiVersion
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.ProjectConnection
 import org.gradle.tooling.TestLauncher
-import spock.lang.IgnoreRest
+
+import java.util.regex.Pattern
 
 @TargetGradleVersion(">=7.6")
 @ToolingApiVersion(">=7.6")
@@ -201,7 +202,6 @@ class TestLauncherTaskExecutionCrossVersionSpec extends ToolingApiSpecification 
         taskExecuted(':included:foo')
     }
 
-    @IgnoreRest
     def "can control the order of tasks and tests"() {
         setup:
         buildFile << '''
@@ -217,7 +217,7 @@ class TestLauncherTaskExecutionCrossVersionSpec extends ToolingApiSpecification 
         }
 
         then:
-        result.assertTasksExecutedInOrder(':setupTest', ':test')
+        tasksExecutedInOrder(':setupTest', ':test')
 
         when:
         withConnection {connection ->
@@ -228,7 +228,7 @@ class TestLauncherTaskExecutionCrossVersionSpec extends ToolingApiSpecification 
         }
 
         then:
-        result.assertTasksExecutedInOrder(':test', ':setupTest')
+        tasksExecutedInOrder(':test', ':setupTest')
     }
 
     private def launchTestWithTestFilter(GradleConnector connector, @DelegatesTo(TestLauncher) @ClosureParams(value = SimpleType, options = ['org.gradle.tooling.TestLauncher']) Closure testLauncherSpec) {
@@ -251,5 +251,9 @@ class TestLauncherTaskExecutionCrossVersionSpec extends ToolingApiSpecification 
 
     def taskExecuted(String path) {
         stdout.toString().contains("Task ${path}")
+    }
+
+    def tasksExecutedInOrder(String... tasks) {
+        stdout.toString().matches(Pattern.compile(".*Task ${tasks.join('.* Task ')}.*", Pattern.DOTALL | Pattern.MULTILINE))
     }
 }

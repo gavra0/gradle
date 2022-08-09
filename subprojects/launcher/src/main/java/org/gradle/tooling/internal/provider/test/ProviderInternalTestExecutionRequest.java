@@ -46,11 +46,6 @@ public interface ProviderInternalTestExecutionRequest {
     /**
      * @since 7.6
      */
-    List<String> getTasks(List<String> defaults);
-
-    /**
-     * @since 7.6
-     */
     boolean isRunDefaultTasks(boolean dafaults);
 
     /**

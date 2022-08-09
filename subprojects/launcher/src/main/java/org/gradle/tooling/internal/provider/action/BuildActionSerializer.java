@@ -351,16 +351,14 @@ public class BuildActionSerializer {
         final InternalDebugOptions debugOptions;
         final Map<String, List<InternalJvmTestRequest>> taskAndTests;
         final boolean isRunDefaultTasks;
-        final List<String> tasks;
 
-        public TestExecutionRequestPayload(Set<InternalTestDescriptor> testDescriptors, Set<String> classNames, Set<InternalJvmTestRequest> internalJvmTestRequests, InternalDebugOptions debugOptions, Map<String, List<InternalJvmTestRequest>> taskAndTests, boolean isRunDefaultTasks, List<String> tasks) {
+        public TestExecutionRequestPayload(Set<InternalTestDescriptor> testDescriptors, Set<String> classNames, Set<InternalJvmTestRequest> internalJvmTestRequests, InternalDebugOptions debugOptions, Map<String, List<InternalJvmTestRequest>> taskAndTests, boolean isRunDefaultTasks) {
             this.testDescriptors = testDescriptors;
             this.classNames = classNames;
             this.internalJvmTestRequests = internalJvmTestRequests;
             this.debugOptions = debugOptions;
             this.taskAndTests = taskAndTests;
             this.isRunDefaultTasks = isRunDefaultTasks;
-            this.tasks = tasks;
         }
     }
 
@@ -380,8 +378,7 @@ public class BuildActionSerializer {
                 value.getInternalJvmTestRequests(),
                 value.getDebugOptions(),
                 value.getTaskAndTests(),
-                value.isRunDefaultTasks(),
-                value.getTasks()
+                value.isRunDefaultTasks()
             ));
 
             encoder.writeSmallInt(value.getTestPatternSpecs().size());
@@ -400,7 +397,7 @@ public class BuildActionSerializer {
             for (int i = 0; i < numOfPatterns; i++) {
                 testPatternSpecs.add(i, testPatternSerializer.read(decoder));
             }
-            return new TestExecutionRequestAction(buildEventSubscriptions, startParameter, payload.testDescriptors, payload.classNames, payload.internalJvmTestRequests, payload.debugOptions, payload.taskAndTests, payload.isRunDefaultTasks, payload.tasks, testPatternSpecs);
+            return new TestExecutionRequestAction(buildEventSubscriptions, startParameter, payload.testDescriptors, payload.classNames, payload.internalJvmTestRequests, payload.debugOptions, payload.taskAndTests, payload.isRunDefaultTasks, testPatternSpecs);
         }
     }
 
@@ -410,6 +407,7 @@ public class BuildActionSerializer {
 
         @Override
         public void write(Encoder encoder, InternalTestPatternSpec value) throws Exception {
+            encoder.writeBoolean(value.isTestTask());
             encoder.writeString(value.getTaskPath());
             stringListSerializer.write(encoder, value.getClasses());
             stringListSerializer.write(encoder, value.getPatterns());
@@ -426,6 +424,7 @@ public class BuildActionSerializer {
 
         @Override
         public InternalTestPatternSpec read(Decoder decoder) throws Exception {
+            boolean isTestTask = decoder.readBoolean();
             String taskPath = decoder.readString();
             List<String> classes = stringListSerializer.read(decoder);
             List<String> patterns = stringListSerializer.read(decoder);
@@ -437,7 +436,7 @@ public class BuildActionSerializer {
                 List<String> method = stringListSerializer.read(decoder);
                 methods.put(cls, method);
             }
-            return new DefaultTestPatternSpec(taskPath, classes, methods, packages, patterns);
+            return new DefaultTestPatternSpec(isTestTask, taskPath, classes, methods, packages, patterns);
         }
     }
 

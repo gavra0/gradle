@@ -24,15 +24,20 @@ import java.util.List;
 
 public class DefaultTestSpec implements TestSpec {
 
+    private final boolean isTestTask;
     private List<DefaultTestPatternSpec> testPatternSpecs = new ArrayList<DefaultTestPatternSpec>();
 
     public List<DefaultTestPatternSpec> getTestPatternSpecs() {
         return testPatternSpecs;
     }
 
+    public DefaultTestSpec(boolean isTestTask) {
+        this.isTestTask = isTestTask;
+    }
+
     @Override
     public TestPatternSpec forTaskPath(String taskPath) {
-        DefaultTestPatternSpec spec = new DefaultTestPatternSpec(taskPath);
+        DefaultTestPatternSpec spec = new DefaultTestPatternSpec(isTestTask, taskPath);
         testPatternSpecs.add(spec);
         return spec;
     }

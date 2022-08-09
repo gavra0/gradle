@@ -27,6 +27,7 @@ import java.util.Map;
  * @since 7.6
  */
 public interface InternalTestPatternSpec {
+    boolean isTestTask();
     String getTaskPath();
     List<String> getPackages();
     List<String> getClasses();
