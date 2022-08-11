@@ -36,7 +36,7 @@ class DependencyInsightReportVariantDetailsIntegrationTest extends AbstractInteg
         new ResolveTestFixture(buildFile).addDefaultVariantDerivationStrategy()
     }
 
-    def "shows selected variant details"() {
+    def "shows compileClasspath details"() {
         given:
         settingsFile << "include 'a', 'b', 'c'"
         file('a/build.gradle') << '''
@@ -54,26 +54,57 @@ class DependencyInsightReportVariantDetailsIntegrationTest extends AbstractInteg
         }
 
         when:
-        run "a:dependencyInsight", "--dependency", ":$expectedProject", "--configuration", configuration
+        run "a:dependencyInsight", "--dependency", ":b", "--configuration", "compileClasspath"
 
         then:
-        outputContains """project :$expectedProject
-${variantOf(expectedVariant, [
+        outputContains """project :b
+${variantOf("apiElements", [
             "org.gradle.category": of("library", "library"),
             "org.gradle.dependency.bundling": of("external", "external"),
             "org.gradle.jvm.version": of(JavaVersion.current().majorVersion, JavaVersion.current().majorVersion),
-            "org.gradle.libraryelements": of("jar", requestedLibraryElements),
-            "org.gradle.usage": of(usage, usage),
+            "org.gradle.libraryelements": of("jar", "classes"),
+            "org.gradle.usage": of("java-api", "java-api"),
+            "org.gradle.view": of("java-api", "java-api"),
             "org.gradle.jvm.environment": of("", "standard-jvm"),
         ])}
 
-project :$expectedProject
-\\--- $configuration"""
+project :b
+\\--- compileClasspath"""
+    }
 
-        where:
-        configuration      | expectedProject | expectedVariant   | usage          | requestedLibraryElements
-        'compileClasspath' | 'b'             | 'apiElements'     | 'java-api'     | 'classes'
-        'runtimeClasspath' | 'c'             | 'runtimeElements' | 'java-runtime' | 'jar'
+    def "shows runtimeClasspath details"() {
+        given:
+        settingsFile << "include 'a', 'b', 'c'"
+        file('a/build.gradle') << '''
+            apply plugin: 'java-library'
+
+            dependencies {
+                api project(':b')
+                implementation project(':c')
+            }
+        '''
+        ['b', 'c'].each {
+            file("${it}/build.gradle") << """
+                apply plugin: 'java-library'
+            """
+        }
+
+        when:
+        run "a:dependencyInsight", "--dependency", ":c", "--configuration", "runtimeClasspath"
+
+        then:
+        outputContains """project :c
+${variantOf("runtimeElements", [
+            "org.gradle.category": of("library", "library"),
+            "org.gradle.dependency.bundling": of("external", "external"),
+            "org.gradle.jvm.version": of(JavaVersion.current().majorVersion, JavaVersion.current().majorVersion),
+            "org.gradle.libraryelements": of("jar", "jar"),
+            "org.gradle.usage": of("java-runtime", "java-runtime"),
+            "org.gradle.jvm.environment": of("", "standard-jvm"),
+        ])}
+
+project :c
+\\--- runtimeClasspath"""
     }
 
     def "shows all variant details for compileClasspath"() {
@@ -104,7 +135,7 @@ project :$expectedProject
 
         then:
         ['b', 'c'].each { expectedProject ->
-            outputContains """project :$expectedProject
+            result.groupedOutput.task(":a:insight").assertOutputContains """project :$expectedProject
 -------------------
 Selected Variant(s)
 -------------------
@@ -115,6 +146,7 @@ ${variantOf('apiElements', [
                 'org.gradle.jvm.version': of(JavaVersion.current().majorVersion, JavaVersion.current().majorVersion),
                 'org.gradle.libraryelements': of('jar', 'classes'),
                 'org.gradle.usage': of('java-api', 'java-api'),
+                'org.gradle.view': of('java-api', 'java-api'),
                 'org.gradle.jvm.environment': of('', 'standard-jvm')
 ])}
 
@@ -128,6 +160,18 @@ ${variantOf('apiElements-classes', [
                 'org.gradle.jvm.version': of(JavaVersion.current().majorVersion, JavaVersion.current().majorVersion),
                 'org.gradle.libraryelements': of('classes', 'classes'),
                 'org.gradle.usage': of('java-api', 'java-api'),
+                'org.gradle.view': of('java-api', 'java-api'),
+                'org.gradle.jvm.environment': of('', 'standard-jvm')
+            ])}
+
+${variantOf('compileElements', [
+                artifactType: of('jar', ''),
+                'org.gradle.category': of('library', 'library'),
+                'org.gradle.dependency.bundling': of('external', 'external'),
+                'org.gradle.jvm.version': of(JavaVersion.current().majorVersion, JavaVersion.current().majorVersion),
+                'org.gradle.libraryelements': of('jar', 'classes'),
+                'org.gradle.usage': of('java-api', 'java-api'),
+                'org.gradle.view': of('java-compile', 'java-api'),
                 'org.gradle.jvm.environment': of('', 'standard-jvm')
             ])}
 
@@ -139,6 +183,7 @@ ${variantOf('mainSourceElements', [
                 'org.gradle.jvm.version': of('', JavaVersion.current().majorVersion),
                 'org.gradle.libraryelements': of('', 'classes'),
                 'org.gradle.usage': of('', 'java-api'),
+                'org.gradle.view': of('', 'java-api'),
             ])}
 
 ${variantOf('runtimeElements', [
@@ -148,7 +193,8 @@ ${variantOf('runtimeElements', [
                 'org.gradle.jvm.version': of(JavaVersion.current().majorVersion, JavaVersion.current().majorVersion),
                 'org.gradle.libraryelements': of('jar', 'classes'),
                 'org.gradle.usage': of('java-runtime', 'java-api'),
-                'org.gradle.jvm.environment': of('', 'standard-jvm')
+                'org.gradle.jvm.environment': of('', 'standard-jvm'),
+                'org.gradle.view': of('', 'java-api'),
             ])}
 
 ${variantOf('runtimeElements-classes', [
@@ -157,7 +203,8 @@ ${variantOf('runtimeElements-classes', [
                 'org.gradle.jvm.version': of(JavaVersion.current().majorVersion, JavaVersion.current().majorVersion),
                 'org.gradle.libraryelements': of('classes', 'classes'),
                 'org.gradle.usage': of('java-runtime', 'java-api'),
-                'org.gradle.jvm.environment': of('', 'standard-jvm')
+                'org.gradle.jvm.environment': of('', 'standard-jvm'),
+                'org.gradle.view': of('', 'java-api'),
             ])}
 
 ${variantOf('runtimeElements-resources', [
@@ -166,7 +213,8 @@ ${variantOf('runtimeElements-resources', [
                 'org.gradle.jvm.version': of(JavaVersion.current().majorVersion, JavaVersion.current().majorVersion),
                 'org.gradle.libraryelements': of('resources', 'classes'),
                 'org.gradle.usage': of('java-runtime', 'java-api'),
-                'org.gradle.jvm.environment': of('', 'standard-jvm')
+                'org.gradle.jvm.environment': of('', 'standard-jvm'),
+                'org.gradle.view': of('', 'java-api'),
             ])}
 
 ${variantOf('testResultsElementsForTest', [
@@ -180,6 +228,7 @@ ${variantOf('testResultsElementsForTest', [
                 'org.gradle.jvm.version': of('', JavaVersion.current().majorVersion),
                 'org.gradle.libraryelements': of('', 'classes'),
                 'org.gradle.usage': of('', 'java-api'),
+                'org.gradle.view': of('', 'java-api'),
             ])}
 
 
@@ -217,7 +266,7 @@ project :$expectedProject
 
         then:
         ['b', 'c'].each { expectedProject ->
-            outputContains """project :$expectedProject
+            result.groupedOutput.task(":a:insight").assertOutputContains"""project :$expectedProject
 -------------------
 Selected Variant(s)
 -------------------
@@ -237,6 +286,7 @@ Unselected Variant(s)
 
 ${variantOf('apiElements', [
                 artifactType: of('jar', ''),
+                'org.gradle.view': of('java-api', ''),
                 'org.gradle.category': of('library', 'library'),
                 'org.gradle.dependency.bundling': of('external', 'external'),
                 'org.gradle.jvm.version': of(JavaVersion.current().majorVersion, JavaVersion.current().majorVersion),
@@ -246,10 +296,22 @@ ${variantOf('apiElements', [
             ])}
 
 ${variantOf("apiElements-classes", [
+                'org.gradle.view': of('java-api', ''),
                 'org.gradle.category': of('library', 'library'),
                 'org.gradle.dependency.bundling': of('external', 'external'),
                 'org.gradle.jvm.version': of(JavaVersion.current().majorVersion, JavaVersion.current().majorVersion),
                 'org.gradle.libraryelements': of('classes', 'jar'),
+                'org.gradle.usage': of('java-api', 'java-runtime'),
+                'org.gradle.jvm.environment': of('', 'standard-jvm')
+            ])}
+
+${variantOf('compileElements', [
+                artifactType: of('jar', ''),
+                'org.gradle.view': of('java-compile', ''),
+                'org.gradle.category': of('library', 'library'),
+                'org.gradle.dependency.bundling': of('external', 'external'),
+                'org.gradle.jvm.version': of(JavaVersion.current().majorVersion, JavaVersion.current().majorVersion),
+                'org.gradle.libraryelements': of('jar', 'jar'),
                 'org.gradle.usage': of('java-api', 'java-runtime'),
                 'org.gradle.jvm.environment': of('', 'standard-jvm')
             ])}
@@ -371,6 +433,7 @@ project :$expectedProject
     | org.gradle.dependency.bundling |                     | external     |
     | org.gradle.jvm.environment     |                     | standard-jvm |
     | org.gradle.jvm.version         |                     | ${JavaVersion.current().majorVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |                     | java-api     |
 
 org.test:leaf:1.0
 \\--- org.test:a:1.0

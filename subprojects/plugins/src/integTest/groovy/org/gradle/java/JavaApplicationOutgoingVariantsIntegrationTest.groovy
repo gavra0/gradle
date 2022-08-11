@@ -129,6 +129,36 @@ project(':consumer') {
         """)
     }
 
+    def "provides compile JAR variant - requestJarAttribute: #requestJarAttribute"() {
+        buildFile << """
+            project(':consumer') {
+                apply plugin: 'jvm-ecosystem'
+                configurations.consume.attributes.attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_API))
+                configurations.consume.attributes.attribute(View.VIEW_ATTRIBUTE, objects.named(View, View.JAVA_COMPILE))
+                if ($requestJarAttribute) {
+                    configurations.consume.attributes.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements, LibraryElements.JAR))
+                }
+            }
+        """
+
+        when:
+        resolve()
+
+        then:
+        result.assertTasksExecuted(":java:classes", ":java:compileJava", ":java:jar", ":java:processResources", ":other-java:classes", ":other-java:compileJava", ":other-java:jar", ":other-java:processResources", ":consumer:resolve")
+        assertResolveOutput("""
+            files: [java.jar, file-dep.jar, compile-only-1.0.jar, other-java.jar, implementation-1.0.jar]
+            java.jar (project :java) {artifactType=jar, org.gradle.category=library, org.gradle.dependency.bundling=external, ${defaultTargetPlatform()}, org.gradle.libraryelements=jar, org.gradle.usage=java-api, org.gradle.view=java-compile}
+            file-dep.jar {artifactType=jar, org.gradle.libraryelements=jar, org.gradle.usage=java-runtime}
+            compile-only-1.0.jar (test:compile-only:1.0) {artifactType=jar, org.gradle.category=library, org.gradle.libraryelements=jar, org.gradle.status=release, org.gradle.usage=java-api}
+            other-java.jar (project :other-java) {artifactType=jar, org.gradle.category=library, org.gradle.dependency.bundling=external, ${defaultTargetPlatform()}, org.gradle.libraryelements=jar, org.gradle.usage=java-api, org.gradle.view=java-compile}
+            implementation-1.0.jar (test:implementation:1.0) {artifactType=jar, org.gradle.category=library, org.gradle.libraryelements=jar, org.gradle.status=release, org.gradle.usage=java-api}
+        """)
+
+        where:
+        requestJarAttribute << [true, false]
+    }
+
     def "provides runtime jar variant - requestJarAttribute: #requestJarAttribute"() {
         buildFile << """
             project(':consumer') {

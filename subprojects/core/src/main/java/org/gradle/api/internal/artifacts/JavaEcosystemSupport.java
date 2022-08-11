@@ -31,6 +31,7 @@ import org.gradle.api.attributes.HasAttributes;
 import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.attributes.MultipleCandidatesDetails;
 import org.gradle.api.attributes.Usage;
+import org.gradle.api.attributes.View;
 import org.gradle.api.attributes.java.TargetJvmEnvironment;
 import org.gradle.api.attributes.java.TargetJvmVersion;
 import org.gradle.api.internal.ReusableAction;
@@ -52,6 +53,7 @@ public abstract class JavaEcosystemSupport {
     public static void configureSchema(AttributesSchema attributesSchema, final ObjectFactory objectFactory) {
         configureUsage(attributesSchema, objectFactory);
         configureLibraryElements(attributesSchema, objectFactory);
+//        configureView(attributesSchema, objectFactory);
         configureBundling(attributesSchema);
         configureTargetPlatform(attributesSchema);
         configureTargetEnvironment(attributesSchema);
@@ -116,6 +118,57 @@ public abstract class JavaEcosystemSupport {
         libraryElementsSchema.getDisambiguationRules().add(LibraryElementsDisambiguationRules.class, actionConfiguration -> {
             actionConfiguration.params(objectFactory.named(LibraryElements.class, LibraryElements.JAR));
         });
+    }
+
+    private static void configureView(AttributesSchema attributesSchema, final ObjectFactory objectFactory) {
+        AttributeMatchingStrategy<View> viewSchema = attributesSchema.attribute(View.VIEW_ATTRIBUTE);
+        viewSchema.getCompatibilityRules().add(ViewCompatibilityRules.class);
+        viewSchema.getDisambiguationRules().add(ViewDisambiguationRules.class, actionConfiguration -> {
+            actionConfiguration.params(objectFactory.named(View.class, View.JAVA_API));
+            actionConfiguration.params(objectFactory.named(View.class, View.JAVA_COMPILE));
+        });
+    }
+
+    public static class ViewDisambiguationRules implements AttributeDisambiguationRule<View>, ReusableAction {
+
+        final View javaApi;
+        final View javaCompile;
+
+        @Inject
+        public ViewDisambiguationRules(View javaApi,
+                                       View javaCompile) {
+            this.javaApi = javaApi;
+            this.javaCompile = javaCompile;
+        }
+
+        @Override
+        public void execute(MultipleCandidatesDetails<View> details) {
+            Set<View> candidateValues = details.getCandidateValues();
+            View consumerValue = details.getConsumerValue();
+            if (consumerValue == null) {
+                if (candidateValues.contains(javaApi)) {
+                    // Use the api when nothing has been requested
+                    details.closestMatch(javaApi);
+                }
+            } else if (candidateValues.contains(consumerValue)) {
+                // Use what they requested, if available
+                details.closestMatch(consumerValue);
+            }
+        }
+    }
+
+    @VisibleForTesting
+    public static class ViewCompatibilityRules implements AttributeCompatibilityRule<View>, ReusableAction {
+
+        @Override
+        public void execute(CompatibilityCheckDetails<View> details) {
+            View consumerValue = details.getConsumerValue();
+            View producerValue = details.getProducerValue();
+            if (consumerValue == null) {
+                // consumer didn't express any preferences, everything fits
+                details.compatible();
+            }
+        }
     }
 
     @VisibleForTesting

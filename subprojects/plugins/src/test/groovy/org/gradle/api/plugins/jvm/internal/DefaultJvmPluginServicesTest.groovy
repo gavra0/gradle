@@ -27,6 +27,7 @@ import org.gradle.api.attributes.DocsType
 import org.gradle.api.attributes.HasConfigurableAttributes
 import org.gradle.api.attributes.LibraryElements
 import org.gradle.api.attributes.Usage
+import org.gradle.api.attributes.View
 import org.gradle.api.attributes.java.TargetJvmEnvironment
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.internal.artifacts.ConfigurationVariantInternal
@@ -48,9 +49,9 @@ import static org.gradle.api.attributes.Category.LIBRARY
 import static org.gradle.api.attributes.Category.REGULAR_PLATFORM
 import static org.gradle.api.attributes.DocsType.DOCS_TYPE_ATTRIBUTE
 import static org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
-import static org.gradle.api.attributes.Usage.JAVA_API
 import static org.gradle.api.attributes.Usage.JAVA_RUNTIME
 import static org.gradle.api.attributes.Usage.USAGE_ATTRIBUTE
+import static org.gradle.api.attributes.View.VIEW_ATTRIBUTE
 import static org.gradle.api.attributes.java.TargetJvmEnvironment.STANDARD_JVM
 import static org.gradle.api.attributes.java.TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE
 import static org.gradle.api.attributes.java.TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE
@@ -80,9 +81,10 @@ class DefaultJvmPluginServicesTest extends AbstractJvmPluginServicesTest {
         0 * _
         mutable.asMap() == [
             (CATEGORY_ATTRIBUTE): named(Category, LIBRARY),
-            (USAGE_ATTRIBUTE): named(Usage, JAVA_API),
+            (USAGE_ATTRIBUTE): named(Usage, Usage.JAVA_API),
             (BUNDLING_ATTRIBUTE): named(Bundling, EXTERNAL),
             (TARGET_JVM_ENVIRONMENT_ATTRIBUTE): named(TargetJvmEnvironment, STANDARD_JVM),
+            (VIEW_ATTRIBUTE): named(View, View.JAVA_API)
         ]
 
         when:
@@ -92,9 +94,10 @@ class DefaultJvmPluginServicesTest extends AbstractJvmPluginServicesTest {
         then:
         mutable.asMap() == [
             (CATEGORY_ATTRIBUTE): named(Category, LIBRARY),
-            (USAGE_ATTRIBUTE): named(Usage, JAVA_API),
+            (USAGE_ATTRIBUTE): named(Usage, Usage.JAVA_API),
             (BUNDLING_ATTRIBUTE): named(Bundling, EXTERNAL),
             (TARGET_JVM_ENVIRONMENT_ATTRIBUTE): named(TargetJvmEnvironment, STANDARD_JVM),
+            (VIEW_ATTRIBUTE): named(View, View.JAVA_API),
             (TARGET_JVM_VERSION_ATTRIBUTE): 8
         ]
     }
@@ -253,7 +256,7 @@ class DefaultJvmPluginServicesTest extends AbstractJvmPluginServicesTest {
 
         then:
         attrs.asMap() == [
-            (USAGE_ATTRIBUTE): named(Usage, JAVA_API)
+            (USAGE_ATTRIBUTE): named(Usage, Usage.JAVA_API)
         ]
 
         when:

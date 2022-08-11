@@ -1855,6 +1855,7 @@ project :impl
     | org.gradle.jvm.version         | ${jvmVersion.padRight("java-api".length())} | ${jvmVersion.padRight("standard-jvm".length())} |
     | org.gradle.libraryelements     | jar      | classes      |
     | org.gradle.usage               | java-api | java-api     |
+    | org.gradle.view                | java-api | java-api     |
     | org.gradle.jvm.environment     |          | standard-jvm |
 
 project :impl
@@ -1912,6 +1913,7 @@ org:leaf4:1.0
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
 
 org:leaf4:1.0
 \\--- project :impl
@@ -1951,6 +1953,7 @@ org:leaf1:1.0
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
 
 org:leaf1:1.0
 \\--- compileClasspath
@@ -1972,6 +1975,7 @@ org:leaf2:1.0
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
 
 org:leaf2:1.0
 \\--- compileClasspath
@@ -2032,6 +2036,7 @@ project :api
     | org.gradle.jvm.version         | ${jvmVersion.padRight("java-api".length())} | ${jvmVersion.padRight("standard-jvm".length())} |
     | org.gradle.libraryelements     | jar      | classes      |
     | org.gradle.usage               | java-api | java-api     |
+    | org.gradle.view                | java-api | java-api     |
     | org.gradle.jvm.environment     |          | standard-jvm |
 
 project :api
@@ -2053,6 +2058,7 @@ project :some:deeply:nested
     | org.gradle.jvm.version         | ${jvmVersion.padRight("java-api".length())} | ${jvmVersion.padRight("standard-jvm".length())} |
     | org.gradle.libraryelements     | jar      | classes      |
     | org.gradle.usage               | java-api | java-api     |
+    | org.gradle.view                | java-api | java-api     |
     | org.gradle.jvm.environment     |          | standard-jvm |
 
 project :some:deeply:nested
@@ -2073,6 +2079,7 @@ project :some:deeply:nested
     | org.gradle.jvm.version         | ${jvmVersion.padRight("java-api".length())} | ${jvmVersion.padRight("standard-jvm".length())} |
     | org.gradle.libraryelements     | jar      | classes      |
     | org.gradle.usage               | java-api | java-api     |
+    | org.gradle.view                | java-api | java-api     |
     | org.gradle.jvm.environment     |          | standard-jvm |
 
 project :some:deeply:nested
@@ -2129,6 +2136,7 @@ org:leaf3:1.0
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
 
 org:leaf3:1.0
 \\--- org:leaf2:1.0
@@ -2240,6 +2248,7 @@ foo:foo:1.0
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
    Selection reasons:
       - By constraint: $rejected
 
@@ -2296,6 +2305,7 @@ org:foo -> $selected
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
    Selection reasons:
       - By constraint: ${rejected}${reason}
 
@@ -2349,6 +2359,7 @@ org:foo -> $selected
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
    Selection reasons:
       - Was requested: ${rejected}${reason}
 
@@ -2400,6 +2411,7 @@ org:foo:${displayVersion} -> $selected
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
    Selection reasons:
       - Was requested: didn't match versions 2.0, 1.5, 1.4
 
@@ -2457,6 +2469,7 @@ org:foo:[1.1,1.3] -> 1.3
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
    Selection reasons:
       - Was requested: rejected versions 1.2, 1.1
 
@@ -2474,6 +2487,7 @@ org:foo:1.1
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
    Selection reasons:
       - Was requested: rejected version 1.2
 
@@ -2535,6 +2549,7 @@ org:bar:1.0
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
    Selection reasons:
       - Rejection: 1.2 by rule because version 1.2 is bad
       - Rejection: 1.1 by rule because version 1.1 is bad
@@ -2553,6 +2568,7 @@ org:foo:1.1
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
    Selection reasons:
       - Was requested: rejected version 1.2
 
@@ -2598,6 +2614,7 @@ org:leaf:1.0 (by constraint)
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
 
 org:leaf:1.0
 \\--- org:bom:1.0
@@ -2651,6 +2668,7 @@ org.test:leaf:1.0
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
    Selection reasons:
       - Was requested: first reason
 
@@ -2837,6 +2855,7 @@ org:foo:1.0
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
    Selection reasons:
       - By constraint
       - Was requested: rejected versions 1.2, 1.1
@@ -2893,6 +2912,7 @@ org:foo:{require [1.0,); reject 1.1} -> 1.0
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
    Selection reasons:
       - Was requested: first reason
       - Was requested: transitive reason
@@ -2959,6 +2979,7 @@ org:foo:1.0
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
    Selection reasons:
       - Rejection: version 1.2:
           - Attribute 'color' didn't match. Requested 'blue', was: 'red'
@@ -2968,6 +2989,7 @@ org:foo:1.0
           - Attribute 'org.gradle.jvm.version' didn't match. Requested '${JavaVersion.current().majorVersion}', was: not found
           - Attribute 'org.gradle.libraryelements' didn't match. Requested 'classes', was: not found
           - Attribute 'org.gradle.usage' didn't match. Requested 'java-api', was: not found
+          - Attribute 'org.gradle.view' didn't match. Requested 'java-api', was: not found
       - Rejection: version 1.1:
           - Attribute 'color' didn't match. Requested 'blue', was: 'green'
           - Attribute 'org.gradle.category' didn't match. Requested 'library', was: not found
@@ -2976,6 +2998,7 @@ org:foo:1.0
           - Attribute 'org.gradle.jvm.version' didn't match. Requested '${JavaVersion.current().majorVersion}', was: not found
           - Attribute 'org.gradle.libraryelements' didn't match. Requested 'classes', was: not found
           - Attribute 'org.gradle.usage' didn't match. Requested 'java-api', was: not found
+          - Attribute 'org.gradle.view' didn't match. Requested 'java-api', was: not found
 
 org:foo:[1.0,) -> 1.0
 \\--- compileClasspath
@@ -3041,6 +3064,7 @@ planet:mercury:1.0.2
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
    Selection reasons:
       - By conflict resolution: between versions 1.0.2 and 1.0.1
 
@@ -3073,6 +3097,7 @@ planet:venus:2.0.1
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
    Selection reasons:
       - By conflict resolution: between versions 2.0.1, 2.0.0 and 1.0
 
@@ -3105,6 +3130,7 @@ planet:pluto:1.0.0
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
 
 planet:pluto:1.0.0
 \\--- planet:mercury:1.0.2
@@ -3155,6 +3181,7 @@ org:foo:1.5
     | org.gradle.dependency.bundling |          | external     |
     | org.gradle.jvm.environment     |          | standard-jvm |
     | org.gradle.jvm.version         |          | ${jvmVersion.padRight("standard-jvm".length())} |
+    | org.gradle.view                |          | java-api     |
    Selection reasons:
       - By constraint
       - By ancestor

@@ -55,9 +55,13 @@ class JavaLibraryCrossProjectTargetJvmVersionIntegrationTest extends AbstractInt
         fails ':checkDeps'
 
         then:
-        failure.assertHasCause('''No matching variant of project :producer was found. The consumer was configured to find an API of a library compatible with Java 6, preferably in the form of class files, preferably optimized for standard JVMs, and its dependencies declared externally but:
-  - Variant 'apiElements' capability test:producer:unspecified declares an API of a library, packaged as a jar, and its dependencies declared externally:
+        failure.assertHasCause('''No matching variant of project :producer was found. The consumer was configured to find an API of a library compatible with Java 6, preferably in the form of class files, preferably optimized for standard JVMs, and its dependencies declared externally, as well as attribute 'org.gradle.view' with value 'java-api' but:
+  - Variant 'apiElements' capability test:producer:unspecified declares an API of a library, packaged as a jar, and its dependencies declared externally, as well as attribute 'org.gradle.view' with value 'java-api':
       - Incompatible because this component declares a component compatible with Java 7 and the consumer needed a component compatible with Java 6
+      - Other compatible attribute:
+          - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
+  - Variant 'compileElements' capability test:producer:unspecified declares an API of a library, packaged as a jar, and its dependencies declared externally:
+      - Incompatible because this component declares a component compatible with Java 7, as well as attribute 'org.gradle.view' with value 'java-compile' and the consumer needed a component compatible with Java 6, as well as attribute 'org.gradle.view' with value 'java-api\'
       - Other compatible attribute:
           - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
   - Variant 'mainSourceElements' capability test:producer:unspecified declares a component, and its dependencies declared externally:
@@ -67,10 +71,12 @@ class JavaLibraryCrossProjectTargetJvmVersionIntegrationTest extends AbstractInt
           - Doesn't say anything about its target Java version (required compatibility with Java 6)
           - Doesn't say anything about its elements (required them preferably in the form of class files)
           - Doesn't say anything about its usage (required an API)
+          - Doesn't say anything about org.gradle.view (required 'java-api')
   - Variant 'runtimeElements' capability test:producer:unspecified declares a runtime of a library, packaged as a jar, and its dependencies declared externally:
       - Incompatible because this component declares a component compatible with Java 7 and the consumer needed a component compatible with Java 6
-      - Other compatible attribute:
+      - Other compatible attributes:
           - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
+          - Doesn't say anything about org.gradle.view (required 'java-api')
   - Variant 'testResultsElementsForTest' capability test:producer:unspecified:
       - Incompatible because this component declares a component of category 'verification' and the consumer needed a library
       - Other compatible attributes:
@@ -78,7 +84,8 @@ class JavaLibraryCrossProjectTargetJvmVersionIntegrationTest extends AbstractInt
           - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
           - Doesn't say anything about its target Java version (required compatibility with Java 6)
           - Doesn't say anything about its elements (required them preferably in the form of class files)
-          - Doesn't say anything about its usage (required an API)''')
+          - Doesn't say anything about its usage (required an API)
+          - Doesn't say anything about org.gradle.view (required 'java-api')''')
     }
 
     def "can select the most appropriate producer variant (#expected) based on target compatibility (#requested)"() {
@@ -154,9 +161,13 @@ class JavaLibraryCrossProjectTargetJvmVersionIntegrationTest extends AbstractInt
         fails ':checkDeps'
 
         then:
-        failure.assertHasCause("""No matching variant of project :producer was found. The consumer was configured to find an API of a library compatible with Java 6, preferably in the form of class files, preferably optimized for standard JVMs, and its dependencies declared externally but:
-  - Variant 'apiElements' capability test:producer:unspecified declares an API of a library, packaged as a jar, and its dependencies declared externally:
+        failure.assertHasCause("""No matching variant of project :producer was found. The consumer was configured to find an API of a library compatible with Java 6, preferably in the form of class files, preferably optimized for standard JVMs, and its dependencies declared externally, as well as attribute 'org.gradle.view' with value 'java-api' but:
+  - Variant 'apiElements' capability test:producer:unspecified declares an API of a library, packaged as a jar, and its dependencies declared externally, as well as attribute 'org.gradle.view' with value 'java-api':
       - Incompatible because this component declares a component compatible with Java 7 and the consumer needed a component compatible with Java 6
+      - Other compatible attribute:
+          - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
+  - Variant 'compileElements' capability test:producer:unspecified declares an API of a library, packaged as a jar, and its dependencies declared externally:
+      - Incompatible because this component declares a component compatible with Java 7, as well as attribute 'org.gradle.view' with value 'java-compile' and the consumer needed a component compatible with Java 6, as well as attribute 'org.gradle.view' with value 'java-api'
       - Other compatible attribute:
           - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
   - Variant 'mainSourceElements' capability test:producer:unspecified declares a component, and its dependencies declared externally:
@@ -166,10 +177,12 @@ class JavaLibraryCrossProjectTargetJvmVersionIntegrationTest extends AbstractInt
           - Doesn't say anything about its target Java version (required compatibility with Java 6)
           - Doesn't say anything about its elements (required them preferably in the form of class files)
           - Doesn't say anything about its usage (required an API)
+          - Doesn't say anything about org.gradle.view (required 'java-api')
   - Variant 'runtimeElements' capability test:producer:unspecified declares a runtime of a library, packaged as a jar, and its dependencies declared externally:
       - Incompatible because this component declares a component compatible with Java 7 and the consumer needed a component compatible with Java 6
-      - Other compatible attribute:
+      - Other compatible attributes:
           - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
+          - Doesn't say anything about org.gradle.view (required 'java-api')
   - Variant 'testResultsElementsForTest' capability test:producer:unspecified:
       - Incompatible because this component declares a component of category 'verification' and the consumer needed a library
       - Other compatible attributes:
@@ -177,7 +190,8 @@ class JavaLibraryCrossProjectTargetJvmVersionIntegrationTest extends AbstractInt
           - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
           - Doesn't say anything about its target Java version (required compatibility with Java 6)
           - Doesn't say anything about its elements (required them preferably in the form of class files)
-          - Doesn't say anything about its usage (required an API)""")
+          - Doesn't say anything about its usage (required an API)
+          - Doesn't say anything about org.gradle.view (required 'java-api')""")
 
         when:
         buildFile << """
@@ -196,7 +210,8 @@ class JavaLibraryCrossProjectTargetJvmVersionIntegrationTest extends AbstractInt
                             'org.gradle.dependency.bundling': 'external',
                             'org.gradle.jvm.version': 7,
                             'org.gradle.usage':'java-api',
-                            'org.gradle.libraryelements': 'jar'
+                            'org.gradle.libraryelements': 'jar',
+                            'org.gradle.view': 'java-api'
                     ])
                     artifact group:'', module:'', version: '', type: '', name: 'main', noType: true
                 }

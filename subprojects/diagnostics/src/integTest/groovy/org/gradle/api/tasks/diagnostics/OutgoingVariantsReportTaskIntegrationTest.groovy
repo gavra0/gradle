@@ -241,6 +241,7 @@ Attributes
     - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
     - org.gradle.libraryelements     = jar
     - org.gradle.usage               = java-api
+    - org.gradle.view                = java-api
 Artifacts
     - $jarPath (artifactType = jar)
 
@@ -257,8 +258,26 @@ Secondary Variants (*)
         - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
         - org.gradle.libraryelements     = classes
         - org.gradle.usage               = java-api
+        - org.gradle.view                = java-api
     Artifacts
         - $builtMainClassesPath (artifactType = java-classes-directory)
+
+--------------------------------------------------
+Variant compileElements
+--------------------------------------------------
+Compile elements for main.
+
+Capabilities
+    - org:myLib:1.0 (default capability)
+Attributes
+    - org.gradle.category            = library
+    - org.gradle.dependency.bundling = external
+    - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
+    - org.gradle.libraryelements     = jar
+    - org.gradle.usage               = java-api
+    - org.gradle.view                = java-compile
+Artifacts
+    - $jarPath (artifactType = jar)
 
 --------------------------------------------------
 Variant mainSourceElements (i)
@@ -379,6 +398,7 @@ Attributes
     - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
     - org.gradle.libraryelements     = jar
     - org.gradle.usage               = java-api
+    - org.gradle.view                = java-api
 Artifacts
     - $jarPath (artifactType = jar)
 
@@ -395,8 +415,26 @@ Secondary Variants (*)
         - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
         - org.gradle.libraryelements     = classes
         - org.gradle.usage               = java-api
+        - org.gradle.view                = java-api
     Artifacts
         - $builtMainClassesPath (artifactType = java-classes-directory)
+
+--------------------------------------------------
+Variant compileElements
+--------------------------------------------------
+Compile elements for main.
+
+Capabilities
+    - org:myLib:1.0 (default capability)
+Attributes
+    - org.gradle.category            = library
+    - org.gradle.dependency.bundling = external
+    - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
+    - org.gradle.libraryelements     = jar
+    - org.gradle.usage               = java-api
+    - org.gradle.view                = java-compile
+Artifacts
+    - $jarPath (artifactType = jar)
 
 --------------------------------------------------
 Variant javadocElements
@@ -546,6 +584,7 @@ Attributes
     - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
     - org.gradle.libraryelements     = jar
     - org.gradle.usage               = java-api
+    - org.gradle.view                = java-api
 Artifacts
     - $jarPath (artifactType = jar)
 
@@ -562,8 +601,26 @@ Secondary Variants (*)
         - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
         - org.gradle.libraryelements     = classes
         - org.gradle.usage               = java-api
+        - org.gradle.view                = java-api
     Artifacts
         - $builtMainClassesPath (artifactType = java-classes-directory)
+
+--------------------------------------------------
+Variant compileElements
+--------------------------------------------------
+Compile elements for main.
+
+Capabilities
+    - org:myLib:1.0 (default capability)
+Attributes
+    - org.gradle.category            = library
+    - org.gradle.dependency.bundling = external
+    - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
+    - org.gradle.libraryelements     = jar
+    - org.gradle.usage               = java-api
+    - org.gradle.view                = java-compile
+Artifacts
+    - $jarPath (artifactType = jar)
 
 --------------------------------------------------
 Variant javadocElements
@@ -777,6 +834,7 @@ Attributes
     - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
     - org.gradle.libraryelements     = jar
     - org.gradle.usage               = java-api
+    - org.gradle.view                = java-api
 Artifacts
     - $jarPath (artifactType = jar)
 
@@ -793,6 +851,7 @@ Secondary Variants (*)
         - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
         - org.gradle.libraryelements     = classes
         - org.gradle.usage               = java-api
+        - org.gradle.view                = java-api
     Artifacts
         - $builtMainClassesPath (artifactType = java-classes-directory)
 
@@ -803,6 +862,23 @@ Configuration for archive artifacts.
 
 Capabilities
     - org:myLib:1.0 (default capability)
+Artifacts
+    - $jarPath (artifactType = jar)
+
+--------------------------------------------------
+Variant compileElements
+--------------------------------------------------
+Compile elements for main.
+
+Capabilities
+    - org:myLib:1.0 (default capability)
+Attributes
+    - org.gradle.category            = library
+    - org.gradle.dependency.bundling = external
+    - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
+    - org.gradle.libraryelements     = jar
+    - org.gradle.usage               = java-api
+    - org.gradle.view                = java-compile
 Artifacts
     - $jarPath (artifactType = jar)
 
@@ -931,6 +1007,7 @@ Attributes
     - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
     - org.gradle.libraryelements     = jar
     - org.gradle.usage               = java-api
+    - org.gradle.view                = java-api
 Artifacts
     - $jarPath (artifactType = jar)
 
@@ -947,6 +1024,7 @@ Secondary Variants (*)
         - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
         - org.gradle.libraryelements     = classes
         - org.gradle.usage               = java-api
+        - org.gradle.view                = java-api
     Artifacts
         - $builtMainClassesPath (artifactType = java-classes-directory)
 
@@ -957,6 +1035,23 @@ Configuration for archive artifacts.
 
 Capabilities
     - org:myLib:1.0 (default capability)
+Artifacts
+    - $jarPath (artifactType = jar)
+
+--------------------------------------------------
+Variant compileElements
+--------------------------------------------------
+Compile elements for main.
+
+Capabilities
+    - org:myLib:1.0 (default capability)
+Attributes
+    - org.gradle.category            = library
+    - org.gradle.dependency.bundling = external
+    - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
+    - org.gradle.libraryelements     = jar
+    - org.gradle.usage               = java-api
+    - org.gradle.view                = java-compile
 Artifacts
     - $jarPath (artifactType = jar)
 
@@ -1194,6 +1289,7 @@ Attributes
     - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
     - org.gradle.libraryelements     = jar
     - org.gradle.usage               = java-api
+    - org.gradle.view                = java-api
 Artifacts
     - $jarPath (artifactType = jar)
 
@@ -1210,8 +1306,26 @@ Secondary Variants (*)
         - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
         - org.gradle.libraryelements     = classes
         - org.gradle.usage               = java-api
+        - org.gradle.view                = java-api
     Artifacts
         - $builtMainClassesPath (artifactType = java-classes-directory)
+
+--------------------------------------------------
+Variant compileElements
+--------------------------------------------------
+Compile elements for main.
+
+Capabilities
+    - org:myLib:1.0 (default capability)
+Attributes
+    - org.gradle.category            = library
+    - org.gradle.dependency.bundling = external
+    - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
+    - org.gradle.libraryelements     = jar
+    - org.gradle.usage               = java-api
+    - org.gradle.view                = java-compile
+Artifacts
+    - $jarPath (artifactType = jar)
 
 --------------------------------------------------
 Variant mainSourceElements (i)

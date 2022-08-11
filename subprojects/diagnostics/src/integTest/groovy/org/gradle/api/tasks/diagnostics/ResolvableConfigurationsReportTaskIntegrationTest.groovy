@@ -249,6 +249,7 @@ Attributes
     - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
     - org.gradle.libraryelements     = classes
     - org.gradle.usage               = java-api
+    - org.gradle.view                = java-api
 Extended Configurations
     - compileOnly
     - implementation
@@ -293,6 +294,7 @@ Attributes
     - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
     - org.gradle.libraryelements     = classes
     - org.gradle.usage               = java-api
+    - org.gradle.view                = java-api
 Extended Configurations
     - testCompileOnly
     - testImplementation
@@ -366,6 +368,7 @@ Attributes
     - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
     - org.gradle.libraryelements     = classes
     - org.gradle.usage               = java-api
+    - org.gradle.view                = java-api
 Extended Configurations
     - compileOnly
     - implementation
@@ -418,6 +421,7 @@ Attributes
     - org.gradle.jvm.version         = ${JavaVersion.current().majorVersion}
     - org.gradle.libraryelements     = classes
     - org.gradle.usage               = java-api
+    - org.gradle.view                = java-api
 Extended Configurations
     - testCompileOnly
     - testImplementation

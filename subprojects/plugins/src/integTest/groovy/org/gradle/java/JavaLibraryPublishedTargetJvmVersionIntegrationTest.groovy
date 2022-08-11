@@ -98,31 +98,37 @@ class JavaLibraryPublishedTargetJvmVersionIntegrationTest extends AbstractHttpDe
         fails ':checkDeps'
 
         then:
-        failure.assertHasCause('''No matching variant of org:producer:1.0 was found. The consumer was configured to find an API of a library compatible with Java 5, preferably in the form of class files, preferably optimized for standard JVMs, and its dependencies declared externally but:
+        failure.assertHasCause('''No matching variant of org:producer:1.0 was found. The consumer was configured to find an API of a library compatible with Java 5, preferably in the form of class files, preferably optimized for standard JVMs, and its dependencies declared externally, as well as attribute 'org.gradle.view' with value 'java-api' but:
   - Variant 'apiElementsJdk6' capability org:producer:1.0 declares an API of a library, packaged as a jar, and its dependencies declared externally:
       - Incompatible because this component declares a component compatible with Java 6 and the consumer needed a component compatible with Java 5
-      - Other compatible attribute:
+      - Other compatible attributes:
           - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
+          - Doesn't say anything about org.gradle.view (required 'java-api')
   - Variant 'apiElementsJdk7' capability org:producer:1.0 declares an API of a library, packaged as a jar, and its dependencies declared externally:
       - Incompatible because this component declares a component compatible with Java 7 and the consumer needed a component compatible with Java 5
-      - Other compatible attribute:
+      - Other compatible attributes:
           - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
+          - Doesn't say anything about org.gradle.view (required 'java-api')
   - Variant 'apiElementsJdk9' capability org:producer:1.0 declares an API of a library, packaged as a jar, and its dependencies declared externally:
       - Incompatible because this component declares a component compatible with Java 9 and the consumer needed a component compatible with Java 5
-      - Other compatible attribute:
+      - Other compatible attributes:
           - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
+          - Doesn't say anything about org.gradle.view (required 'java-api')
   - Variant 'runtimeElementsJdk6' capability org:producer:1.0 declares a runtime of a library, packaged as a jar, and its dependencies declared externally:
       - Incompatible because this component declares a component compatible with Java 6 and the consumer needed a component compatible with Java 5
-      - Other compatible attribute:
+      - Other compatible attributes:
           - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
+          - Doesn't say anything about org.gradle.view (required 'java-api')
   - Variant 'runtimeElementsJdk7' capability org:producer:1.0 declares a runtime of a library, packaged as a jar, and its dependencies declared externally:
       - Incompatible because this component declares a component compatible with Java 7 and the consumer needed a component compatible with Java 5
-      - Other compatible attribute:
+      - Other compatible attributes:
           - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
+          - Doesn't say anything about org.gradle.view (required 'java-api')
   - Variant 'runtimeElementsJdk9' capability org:producer:1.0 declares a runtime of a library, packaged as a jar, and its dependencies declared externally:
       - Incompatible because this component declares a component compatible with Java 9 and the consumer needed a component compatible with Java 5
-      - Other compatible attribute:
-          - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)''')
+      - Other compatible attributes:
+          - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
+          - Doesn't say anything about org.gradle.view (required 'java-api')''')
     }
 
     def "can select the most appropriate producer variant (#expected) based on target compatibility (#requested)"() {

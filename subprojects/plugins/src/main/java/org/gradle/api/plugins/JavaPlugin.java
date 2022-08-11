@@ -34,6 +34,7 @@ import org.gradle.api.attributes.Category;
 import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.attributes.VerificationType;
+import org.gradle.api.attributes.View;
 import org.gradle.api.component.AdhocComponentWithVariants;
 import org.gradle.api.component.SoftwareComponentFactory;
 import org.gradle.api.file.FileCollection;
@@ -256,6 +257,8 @@ public class JavaPlugin implements Plugin<Project> {
 
     private static final String SOURCE_ELEMENTS_VARIANT_NAME = "mainSourceElements";
 
+    private static final String COMPILE_ELEMENTS_CONFIGURATION_NAME = "compileElements";
+
     private final ObjectFactory objectFactory;
     private final SoftwareComponentFactory softwareComponentFactory;
     private final JvmPluginServices jvmServices;
@@ -406,9 +409,29 @@ public class JavaPlugin implements Plugin<Project> {
                 .withDescription("API elements for main."));
 
         apiElementsConfiguration.deprecateForDeclaration(IMPLEMENTATION_CONFIGURATION_NAME, COMPILE_ONLY_CONFIGURATION_NAME);
+        apiElementsConfiguration.getAttributes().attribute(View.VIEW_ATTRIBUTE, objectFactory.named(View.class, View.JAVA_API));
+
+        // Configure variants
         addJarArtifactToConfiguration(apiElementsConfiguration, jarArtifact);
 
         return apiElementsConfiguration;
+    }
+
+    private void createCompileElements(Project project, SourceSet mainSourceSet, PublishArtifact jarArtifact) {
+        ConfigurationContainer configurations = project.getConfigurations();
+        Configuration implementationConfiguration = configurations.getByName(IMPLEMENTATION_CONFIGURATION_NAME);
+        Configuration compileOnly = configurations.getByName(COMPILE_ONLY_CONFIGURATION_NAME);
+
+        final DeprecatableConfiguration compileElementsConfiguration = (DeprecatableConfiguration) jvmServices.createOutgoingElements(COMPILE_ELEMENTS_CONFIGURATION_NAME,
+            builder -> builder.fromSourceSet(mainSourceSet)
+                .providesApi()
+                .withDescription("Compile elements for main.")
+                .extendsFrom(implementationConfiguration, compileOnly));
+        compileElementsConfiguration.deprecateForDeclaration(IMPLEMENTATION_CONFIGURATION_NAME, COMPILE_ONLY_CONFIGURATION_NAME);
+        compileElementsConfiguration.getAttributes().attribute(View.VIEW_ATTRIBUTE, objectFactory.named(View.class, View.JAVA_COMPILE));
+
+        // Configure variants
+        addJarArtifactToConfiguration(compileElementsConfiguration, jarArtifact);
     }
 
     private void createSourceElements(Project project, SourceSet mainSourceSet) {
@@ -435,6 +458,7 @@ public class JavaPlugin implements Plugin<Project> {
         final Configuration runtimeElementsConfiguration = createRuntimeElements(project, mainSourceSet, jarArtifact);
         final Configuration apiElementsConfiguration = createApiElements(mainSourceSet, jarArtifact);
         createSourceElements(project, mainSourceSet);
+        createCompileElements(project, mainSourceSet, jarArtifact);
 
         // Register the main "Java" component
         AdhocComponentWithVariants java = softwareComponentFactory.adhoc("java");
