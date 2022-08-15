@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-package org.gradle.tooling.internal.protocol.test;
+package org.gradle.tooling;
 
-import java.util.List;
-import java.util.Map;
+import org.gradle.api.Action;
+import org.gradle.api.Incubating;
 
 /**
- * Specifies a test pattern
+ * Provides test selection from a specific test task.
  *
- * DO NOT CHANGE THIS INTERFACE. It is part of the cross-version protocol.
- *
+ * @see TestLauncher#withTestsFor(Action)
  * @since 7.6
  */
-public interface InternalTestPatternSpec {
-    boolean isTestTask();
-    String getTaskPath();
-    List<String> getPackages();
-    List<String> getClasses();
-    Map<String, List<String>> getMethods();
-    List<String> getPatterns();
+@Incubating
+public interface TestSpecFactory {
+
+    /**
+     * Creates a new test selection for the target task.
+     *
+     * @param taskPath The target task.
+     * @return A new test selection.
+     */
+    TestSpec forTaskPath(String taskPath);
 }

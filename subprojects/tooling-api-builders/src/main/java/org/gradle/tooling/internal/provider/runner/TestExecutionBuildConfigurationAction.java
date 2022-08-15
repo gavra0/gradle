@@ -37,12 +37,12 @@ import org.gradle.process.internal.DefaultJavaDebugOptions;
 import org.gradle.tooling.internal.protocol.events.InternalTestDescriptor;
 import org.gradle.tooling.internal.protocol.test.InternalDebugOptions;
 import org.gradle.tooling.internal.protocol.test.InternalJvmTestRequest;
-import org.gradle.tooling.internal.protocol.test.InternalTestPatternSpec;
+import org.gradle.tooling.internal.protocol.test.InternalTaskSpec;
+import org.gradle.tooling.internal.protocol.test.InternalTestSpec;
 import org.gradle.tooling.internal.provider.action.TestExecutionRequestAction;
 import org.gradle.util.internal.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -62,17 +62,13 @@ class TestExecutionBuildConfigurationAction implements BuildConfigurationAction 
 
     @Override
     public void configure(BuildExecutionContext context) {
-        final Set<Task> allTestTasksToRun = new LinkedHashSet<>();
+        final Set<Task> tasks = new LinkedHashSet<>();
         final GradleInternal gradleInternal = context.getGradle();
-        allTestTasksToRun.addAll(configureBuildForTestDescriptors(testExecutionRequest));
-        allTestTasksToRun.addAll(configureBuildForInternalJvmTestRequest(gradleInternal, testExecutionRequest));
-        allTestTasksToRun.addAll(configureBuildForTestTasks(testExecutionRequest));
-        configureTestTasks(allTestTasksToRun);
-        System.err.println("!!!" + allTestTasksToRun);
-        for (Task task : allTestTasksToRun) {
-            context.getExecutionPlan().addEntryTasks(Arrays.asList(task));
-        }
-//        context.getExecutionPlan().addEntryTasks(allTestTasksToRun, 0);
+        tasks.addAll(configureBuildForTestDescriptors(testExecutionRequest));
+        tasks.addAll(configureBuildForInternalJvmTestRequest(gradleInternal, testExecutionRequest));
+        tasks.addAll(configureBuildForTestTasks(testExecutionRequest));
+        configureTestTasks(tasks);
+        context.getExecutionPlan().addEntryTasks(tasks);
         if (testExecutionRequest.isRunDefaultTasks()) {
             for (String defaultTask : gradleInternal.getDefaultProject().getDefaultTasks()) {
                 context.getExecutionPlan().addEntryTasks(queryTasks(defaultTask));
@@ -80,8 +76,8 @@ class TestExecutionBuildConfigurationAction implements BuildConfigurationAction 
         }
     }
 
-    private void configureTestTasks(Set<Task> allTestTasksToRun) {
-        for (Task task : allTestTasksToRun) {
+    private void configureTestTasks(Set<Task> tasks) {
+        for (Task task : tasks) {
             if (task instanceof Test) {
                 Test test = (Test) task;
                 test.setIgnoreFailures(true);
@@ -119,29 +115,30 @@ class TestExecutionBuildConfigurationAction implements BuildConfigurationAction 
         }
 
         Set<Test> cleared = new HashSet<>();
-        for (InternalTestPatternSpec patternSpec : testExecutionRequest.getTestPatternSpecs()) {
-            if (patternSpec.isTestTask()) {
-                Set<Test> tasks = queryTestTasks(patternSpec.getTaskPath());
+        for (InternalTaskSpec taskSpec : testExecutionRequest.getTaskSpecs()) {
+            if (taskSpec instanceof InternalTestSpec) {
+                InternalTestSpec testSpec = (InternalTestSpec) taskSpec;
+                Set<Test> tasks = queryTestTasks(taskSpec.getTaskPath());
                 for (Test task : tasks) {
                     maybeClearFilter(task, cleared); // we clear existing filters defined by the build to ensure that the Tooling API client has full control over what tests to execute
                     testTasksToRun.add(task);
                     TestFilter filter = task.getFilter();
-                    for (String cls : patternSpec.getClasses()) {
+                    for (String cls : testSpec.getClasses()) {
                         filter.includeTest(cls, null);
                     }
-                    for (Map.Entry<String, List<String>> entry : patternSpec.getMethods().entrySet()) {
+                    for (Map.Entry<String, List<String>> entry : testSpec.getMethods().entrySet()) {
                         String cls = entry.getKey();
                         for (String method : entry.getValue()) {
                             filter.includeTest(cls, method);
                         }
                     }
-                    filter.getIncludePatterns().addAll(patternSpec.getPatterns());
-                    for (String pkg : patternSpec.getPackages()) {
+                    filter.getIncludePatterns().addAll(testSpec.getPatterns());
+                    for (String pkg : testSpec.getPackages()) {
                         filter.getIncludePatterns().add(pkg + ".*");
                     }
                 }
             } else {
-                testTasksToRun.addAll(queryTasks(patternSpec.getTaskPath()));
+                testTasksToRun.addAll(queryTasks(taskSpec.getTaskPath()));
             }
         }
 

@@ -40,11 +40,13 @@ import org.gradle.internal.serialize.Serializer;
 import org.gradle.internal.serialize.SetSerializer;
 import org.gradle.internal.watch.registry.WatchMode;
 import org.gradle.tooling.events.OperationType;
-import org.gradle.tooling.internal.consumer.DefaultTestPatternSpec;
+import org.gradle.tooling.internal.consumer.DefaultTaskSpec;
+import org.gradle.tooling.internal.consumer.DefaultTestSpec;
 import org.gradle.tooling.internal.protocol.events.InternalTestDescriptor;
 import org.gradle.tooling.internal.protocol.test.InternalDebugOptions;
 import org.gradle.tooling.internal.protocol.test.InternalJvmTestRequest;
-import org.gradle.tooling.internal.protocol.test.InternalTestPatternSpec;
+import org.gradle.tooling.internal.protocol.test.InternalTaskSpec;
+import org.gradle.tooling.internal.protocol.test.InternalTestSpec;
 import org.gradle.tooling.internal.provider.serialization.SerializedPayload;
 import org.gradle.tooling.internal.provider.serialization.SerializedPayloadSerializer;
 
@@ -68,7 +70,7 @@ public class BuildActionSerializer {
         registry.register(ClientProvidedBuildAction.class, new ClientProvidedBuildActionSerializer());
         registry.register(ClientProvidedPhasedAction.class, new ClientProvidedPhasedActionSerializer());
         registry.register(TestExecutionRequestAction.class, new TestExecutionRequestActionSerializer());
-        registry.register(InternalTestPatternSpec.class, new InternalTestPatternSpecSerializer());
+        registry.register(InternalTaskSpec.class, new InternalTaskSpecSerializer());
         return registry.build(BuildAction.class);
     }
 
@@ -366,7 +368,7 @@ public class BuildActionSerializer {
         private final Serializer<StartParameterInternal> startParameterSerializer = new StartParameterSerializer();
         private final Serializer<BuildEventSubscriptions> buildEventSubscriptionsSerializer = new BuildEventSubscriptionsSerializer();
         private final Serializer<TestExecutionRequestPayload> payloadSerializer = new DefaultSerializer<>();
-        private final Serializer<InternalTestPatternSpec> testPatternSerializer = new InternalTestPatternSpecSerializer();
+        private final Serializer<InternalTaskSpec> taskSpecSerializer = new InternalTaskSpecSerializer();
 
         @Override
         public void write(Encoder encoder, TestExecutionRequestAction value) throws Exception {
@@ -381,9 +383,9 @@ public class BuildActionSerializer {
                 value.isRunDefaultTasks()
             ));
 
-            encoder.writeSmallInt(value.getTestPatternSpecs().size());
-            for (InternalTestPatternSpec testPatternSpec : value.getTestPatternSpecs()) {
-                testPatternSerializer.write(encoder, testPatternSpec);
+            encoder.writeSmallInt(value.getTaskSpecs().size());
+            for (InternalTaskSpec taskSpec : value.getTaskSpecs()) {
+                taskSpecSerializer.write(encoder, taskSpec);
             }
         }
 
@@ -393,50 +395,61 @@ public class BuildActionSerializer {
             BuildEventSubscriptions buildEventSubscriptions = buildEventSubscriptionsSerializer.read(decoder);
             TestExecutionRequestPayload payload = payloadSerializer.read(decoder);
             int numOfPatterns = decoder.readSmallInt();
-            List<InternalTestPatternSpec> testPatternSpecs = new ArrayList<>(numOfPatterns);
+            List<InternalTaskSpec> taskSpecs = new ArrayList<>(numOfPatterns);
             for (int i = 0; i < numOfPatterns; i++) {
-                testPatternSpecs.add(i, testPatternSerializer.read(decoder));
+                taskSpecs.add(i, taskSpecSerializer.read(decoder));
             }
-            return new TestExecutionRequestAction(buildEventSubscriptions, startParameter, payload.testDescriptors, payload.classNames, payload.internalJvmTestRequests, payload.debugOptions, payload.taskAndTests, payload.isRunDefaultTasks, testPatternSpecs);
+            return new TestExecutionRequestAction(buildEventSubscriptions, startParameter, payload.testDescriptors, payload.classNames, payload.internalJvmTestRequests, payload.debugOptions, payload.taskAndTests, payload.isRunDefaultTasks, taskSpecs);
         }
     }
 
-    private static class InternalTestPatternSpecSerializer implements Serializer<InternalTestPatternSpec> {
+    private static class InternalTaskSpecSerializer implements Serializer<InternalTaskSpec> {
 
         private final Serializer<List<String>> stringListSerializer = new ListSerializer<>(BaseSerializerFactory.STRING_SERIALIZER);
 
         @Override
-        public void write(Encoder encoder, InternalTestPatternSpec value) throws Exception {
-            encoder.writeBoolean(value.isTestTask());
-            encoder.writeString(value.getTaskPath());
-            stringListSerializer.write(encoder, value.getClasses());
-            stringListSerializer.write(encoder, value.getPatterns());
-            stringListSerializer.write(encoder, value.getPackages());
-            Map<String, List<String>> methods = value.getMethods();
-            encoder.writeSmallInt(methods.size());
-            for (Map.Entry<String, List<String>> entry : methods.entrySet()) {
-                String cls = entry.getKey();
-                List<String> method = entry.getValue();
-                encoder.writeString(cls);
-                stringListSerializer.write(encoder, method);
+        public void write(Encoder encoder, InternalTaskSpec value) throws Exception {
+            if (value instanceof InternalTestSpec) {
+                encoder.writeSmallInt(0);
+                InternalTestSpec test = (InternalTestSpec) value;
+                encoder.writeString(value.getTaskPath());
+                stringListSerializer.write(encoder, test.getClasses());
+                stringListSerializer.write(encoder, test.getPatterns());
+                stringListSerializer.write(encoder, test.getPackages());
+                Map<String, List<String>> methods = test.getMethods();
+                encoder.writeSmallInt(methods.size());
+                for (Map.Entry<String, List<String>> entry : methods.entrySet()) {
+                    String cls = entry.getKey();
+                    List<String> method = entry.getValue();
+                    encoder.writeString(cls);
+                    stringListSerializer.write(encoder, method);
+                }
+            } else {
+                encoder.writeSmallInt(1);
+                encoder.writeString(value.getTaskPath());
             }
         }
 
         @Override
-        public InternalTestPatternSpec read(Decoder decoder) throws Exception {
-            boolean isTestTask = decoder.readBoolean();
-            String taskPath = decoder.readString();
-            List<String> classes = stringListSerializer.read(decoder);
-            List<String> patterns = stringListSerializer.read(decoder);
-            List<String> packages = stringListSerializer.read(decoder);
-            int methodsSize = decoder.readSmallInt();
-            Map<String, List<String>> methods = new LinkedHashMap<>();
-            for (int i = 0; i < methodsSize; i++) {
-                String cls = decoder.readString();
-                List<String> method = stringListSerializer.read(decoder);
-                methods.put(cls, method);
+        public InternalTaskSpec read(Decoder decoder) throws Exception {
+            int type = decoder.readSmallInt();
+            if (type == 0) {
+                String taskPath = decoder.readString();
+                List<String> classes = stringListSerializer.read(decoder);
+                List<String> patterns = stringListSerializer.read(decoder);
+                List<String> packages = stringListSerializer.read(decoder);
+                int methodsSize = decoder.readSmallInt();
+                Map<String, List<String>> methods = new LinkedHashMap<>();
+                for (int i = 0; i < methodsSize; i++) {
+                    String cls = decoder.readString();
+                    List<String> method = stringListSerializer.read(decoder);
+                    methods.put(cls, method);
+                }
+                return new DefaultTestSpec(taskPath, classes, methods, packages, patterns);
+            } else {
+                String taskPath = decoder.readString();
+                return new DefaultTaskSpec(taskPath);
             }
-            return new DefaultTestPatternSpec(isTestTask, taskPath, classes, methods, packages, patterns);
         }
     }
 
