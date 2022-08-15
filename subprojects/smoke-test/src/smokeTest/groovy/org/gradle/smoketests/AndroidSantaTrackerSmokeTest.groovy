@@ -51,6 +51,8 @@ abstract class AndroidSantaTrackerSmokeTest extends AbstractAndroidSantaTrackerS
 class AndroidSantaTrackerDeprecationSmokeTest extends AndroidSantaTrackerSmokeTest {
     @UnsupportedWithConfigurationCache(iterationMatchers = [AGP_NO_CC_ITERATION_MATCHER])
     def "check deprecation warnings produced by building Santa Tracker (agp=#agpVersion)"() {
+        Thread.sleep(30 * 1000)
+
         expect: true
 
         where:
@@ -61,6 +63,8 @@ class AndroidSantaTrackerDeprecationSmokeTest extends AndroidSantaTrackerSmokeTe
 class AndroidSantaTrackerIncrementalCompilationSmokeTest extends AndroidSantaTrackerSmokeTest {
     @UnsupportedWithConfigurationCache(iterationMatchers = [AGP_NO_CC_ITERATION_MATCHER])
     def "incremental Java compilation works for Santa Tracker (agp=#agpVersion)"() {
+        Thread.sleep(30 * 1000)
+
         expect: true
 
         where:
@@ -71,6 +75,8 @@ class AndroidSantaTrackerIncrementalCompilationSmokeTest extends AndroidSantaTra
 class AndroidSantaTrackerLintSmokeTest extends AndroidSantaTrackerSmokeTest {
     @UnsupportedWithConfigurationCache(iterationMatchers = [AGP_NO_CC_ITERATION_MATCHER])
     def "can lint Santa-Tracker (agp=#agpVersion)"() {
+        Thread.sleep(30 * 1000)
+
         expect: true
 
         where:

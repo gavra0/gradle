@@ -29,6 +29,8 @@ class AndroidSantaTrackerCachingSmokeTest extends AbstractAndroidSantaTrackerSmo
 
     @UnsupportedWithConfigurationCache(iterationMatchers = AGP_NO_CC_ITERATION_MATCHER)
     def "can cache Santa Tracker Android application (agp=#agpVersion)"() {
+        Thread.sleep(30 * 1000)
+
         expect: true
 
         where:
