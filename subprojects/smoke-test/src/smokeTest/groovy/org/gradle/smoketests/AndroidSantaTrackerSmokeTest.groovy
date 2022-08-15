@@ -51,7 +51,19 @@ abstract class AndroidSantaTrackerSmokeTest extends AbstractAndroidSantaTrackerS
 class AndroidSantaTrackerDeprecationSmokeTest extends AndroidSantaTrackerSmokeTest {
     @UnsupportedWithConfigurationCache(iterationMatchers = [AGP_NO_CC_ITERATION_MATCHER])
     def "check deprecation warnings produced by building Santa Tracker (agp=#agpVersion)"() {
-        expect: true
+
+        given:
+        AGP_VERSIONS.assumeCurrentJavaVersionIsSupportedBy(agpVersion)
+
+        and:
+        def checkoutDir = temporaryFolder.createDir("checkout")
+        setupCopyOfSantaTracker(checkoutDir)
+
+        when:
+        buildLocationMaybeExpectingWorkerExecutorDeprecation(checkoutDir, agpVersion)
+
+        then:
+        assertConfigurationCacheStateStored()
 
         where:
         agpVersion << TESTED_AGP_VERSIONS
@@ -61,7 +73,36 @@ class AndroidSantaTrackerDeprecationSmokeTest extends AndroidSantaTrackerSmokeTe
 class AndroidSantaTrackerIncrementalCompilationSmokeTest extends AndroidSantaTrackerSmokeTest {
     @UnsupportedWithConfigurationCache(iterationMatchers = [AGP_NO_CC_ITERATION_MATCHER])
     def "incremental Java compilation works for Santa Tracker (agp=#agpVersion)"() {
-        expect: true
+
+        given:
+        AGP_VERSIONS.assumeCurrentJavaVersionIsSupportedBy(agpVersion)
+
+        and:
+        def checkoutDir = temporaryFolder.createDir("checkout")
+        setupCopyOfSantaTracker(checkoutDir)
+
+        and:
+        def pathToClass = "com/google/android/apps/santatracker/tracker/ui/BottomSheetBehavior"
+        def fileToChange = checkoutDir.file("tracker/src/main/java/${pathToClass}.java")
+        def compiledClassFile = checkoutDir.file("tracker/build/intermediates/javac/debug/classes/${pathToClass}.class")
+
+        when:
+        def result = buildLocationMaybeExpectingWorkerExecutorDeprecation(checkoutDir, agpVersion)
+        def md5Before = compiledClassFile.md5Hash
+
+        then:
+        result.task(":tracker:compileDebugJavaWithJavac").outcome == SUCCESS
+        assertConfigurationCacheStateStored()
+
+        when:
+        fileToChange.replace("computeCurrentVelocity(1000", "computeCurrentVelocity(2000")
+        buildLocationMaybeExpectingWorkerExecutorDeprecation(checkoutDir, agpVersion)
+        def md5After = compiledClassFile.md5Hash
+
+        then:
+        result.task(":tracker:compileDebugJavaWithJavac").outcome == SUCCESS
+        assertConfigurationCacheStateLoaded()
+        md5After != md5Before
 
         where:
         agpVersion << TESTED_AGP_VERSIONS
@@ -71,7 +112,49 @@ class AndroidSantaTrackerIncrementalCompilationSmokeTest extends AndroidSantaTra
 class AndroidSantaTrackerLintSmokeTest extends AndroidSantaTrackerSmokeTest {
     @UnsupportedWithConfigurationCache(iterationMatchers = [AGP_NO_CC_ITERATION_MATCHER])
     def "can lint Santa-Tracker (agp=#agpVersion)"() {
-        expect: true
+
+        given:
+        AGP_VERSIONS.assumeCurrentJavaVersionIsSupportedBy(agpVersion)
+
+        and:
+        def checkoutDir = temporaryFolder.createDir("checkout")
+        setupCopyOfSantaTracker(checkoutDir)
+
+        when:
+        def runner = runnerForLocation(
+            checkoutDir, agpVersion,
+            "common:lintDebug", "playgames:lintDebug", "doodles-lib:lintDebug"
+        ).deprecations(AndroidLintDeprecations) {
+            expectAndroidWorkerExecutionSubmitDeprecationWarning(agpVersion)
+            expectAndroidLintDeprecations(agpVersion, [
+                "kotlin-android-extensions-runtime-${kotlinVersion}.jar (org.jetbrains.kotlin:kotlin-android-extensions-runtime:${kotlinVersion})",
+                "appcompat-1.0.2.aar (androidx.appcompat:appcompat:1.0.2)"
+            ])
+        }
+        // Use --continue so that a deterministic set of tasks runs when some tasks fail
+        runner.withArguments(runner.arguments + "--continue")
+        def result = runner.buildAndFail()
+
+        then:
+        assertConfigurationCacheStateStored()
+        result.output.contains("Lint found errors in the project; aborting build.")
+
+        when:
+        runner = runnerForLocation(
+            checkoutDir, agpVersion,
+            "common:lintDebug", "playgames:lintDebug", "doodles-lib:lintDebug"
+        ).deprecations(AndroidLintDeprecations) {
+            expectAndroidLintDeprecations(agpVersion, [
+                "kotlin-android-extensions-runtime-${kotlinVersion}.jar (org.jetbrains.kotlin:kotlin-android-extensions-runtime:${kotlinVersion})",
+                "appcompat-1.0.2.aar (androidx.appcompat:appcompat:1.0.2)"
+            ])
+        }
+        runner.withArguments(runner.arguments + "--continue")
+        result = runner.buildAndFail()
+
+        then:
+        assertConfigurationCacheStateLoaded()
+        result.output.contains("Lint found errors in the project; aborting build.")
 
         where:
         agpVersion << TESTED_AGP_VERSIONS
