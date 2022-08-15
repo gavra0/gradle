@@ -44,6 +44,23 @@ dependencies {
     smokeTestDistributionRuntimeOnly(project(":distributions-full"))
 }
 
+abstract class EmitTeamCityImportDataServiceMessageTask : DefaultTask() {
+    @get:Internal
+    abstract val upstreamTestTaskExecuted: Property<Boolean>
+
+    @get:Internal
+    abstract val upstreamTestTaskName: Property<String>
+
+    // https://www.jetbrains.com/help/teamcity/service-messages.html#Importing+XML+Reports
+    @TaskAction
+    fun emitTeamCityImportDataServiceMessage() {
+        println("Executed: ${upstreamTestTaskExecuted.get()}")
+        if (!upstreamTestTaskExecuted.get()) {
+            println("##teamcity[importData type='junit' path='subprojects/smoke-test/build/test-results/${upstreamTestTaskName.get()}/TEST-*.xml' verbose='true']")
+        }
+    }
+}
+
 tasks {
 
     /**
@@ -145,7 +162,7 @@ tasks {
         }
     }
 
-    register<SmokeTest>("santaTrackerSmokeTest") {
+    registerSmokeTest("santaTrackerSmokeTest") {
         description = "Runs Santa Tracker Smoke tests"
         configureForSmokeTest(santaTracker)
         useJUnitPlatform {
@@ -164,6 +181,18 @@ tasks {
                 includeTestsMatching(santaTrackerTestPattern)
             }
         }
+    }
+}
+
+fun TaskContainer.registerSmokeTest(name: String, configuration: SmokeTest.() -> Unit) {
+    val importData = register<EmitTeamCityImportDataServiceMessageTask>("${name}ImportDataIntoTeamCity") {
+        upstreamTestTaskName.set(name)
+    }
+
+    register<SmokeTest>(name) {
+        configuration()
+        finalizedBy(importData)
+        importData.get().upstreamTestTaskExecuted.set(this.executed)
     }
 }
 

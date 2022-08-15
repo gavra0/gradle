@@ -16,7 +16,9 @@
 
 package gradlebuild.integrationtests.tasks
 
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.Internal
 
 
 /**
@@ -25,4 +27,12 @@ import org.gradle.api.tasks.CacheableTask
 @CacheableTask
 abstract class SmokeTest : DistributionTest() {
     override val prefix = "smoke"
+
+    @get:Internal
+    val executed: Property<Boolean> = project.objects.property(Boolean::class.java).convention(false)
+
+    override fun executeTests() {
+        executed.set(true)
+        super.executeTests()
+    }
 }
