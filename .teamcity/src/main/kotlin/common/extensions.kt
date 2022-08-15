@@ -225,14 +225,12 @@ fun functionalTestParameters(os: Os): List<String> {
     )
 }
 
-fun BuildType.killProcessStep(stepName: String, daemon: Boolean) {
+fun BuildType.killProcessStep(stepName: String, os: Os, arch: Arch = Arch.AMD64) {
     steps {
-        gradleWrapper {
+        script {
             name = stepName
             executionMode = BuildStep.ExecutionMode.ALWAYS
-            tasks = "killExistingProcessesStartedByGradle"
-            gradleParams =
-                (buildToolGradleParameters(daemon) + buildScanTag("CleanUpBuild")).joinToString(separator = " ")
+            scriptContent = "${javaHome(BuildToolBuildJvm, os, arch)}/bin/java build-logic/cleanup/src/main/java/gradlebuild/cleanup/KillLeakingJavaProcesses.java"
         }
     }
 }
