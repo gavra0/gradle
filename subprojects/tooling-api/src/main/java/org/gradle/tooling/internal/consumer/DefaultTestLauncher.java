@@ -220,7 +220,7 @@ public class DefaultTestLauncher extends AbstractLongRunningOperation<DefaultTes
 
     @Override
     public TestLauncher withTestsFor(Action<TestSpecFactory> testSpec) {
-        DefaultTestSpecFactory ts = new DefaultTestSpecFactory(true);
+        DefaultTestSpecFactory ts = new DefaultTestSpecFactory();
         testSpec.execute(ts);
         taskSpecs.addAll(ts.getTestSpecs());
         return this;

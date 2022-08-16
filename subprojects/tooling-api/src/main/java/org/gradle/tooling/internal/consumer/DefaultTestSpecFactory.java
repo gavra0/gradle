@@ -24,15 +24,10 @@ import java.util.List;
 
 public class DefaultTestSpecFactory implements TestSpecFactory {
 
-    private final boolean isTestTask;
     private List<DefaultTestSpec> testSpecs = new ArrayList<DefaultTestSpec>();
 
     public List<DefaultTestSpec> getTestSpecs() {
         return testSpecs;
-    }
-
-    public DefaultTestSpecFactory(boolean isTestTask) {
-        this.isTestTask = isTestTask;
     }
 
     @Override
