@@ -68,7 +68,7 @@ public abstract class Node {
     private DependenciesState dependenciesState = DependenciesState.NOT_COMPLETE;
     private Throwable executionFailure;
     private boolean filtered;
-    private final NodeDependencySet dependencySuccessors = new NodeDependencySet();
+    private final NodeDependencySet dependencySuccessors = new NodeDependencySet(this);
     private final NavigableSet<Node> dependencyPredecessors = newSortedNodeSet();
     private final MutationInfo mutationInfo = new MutationInfo(this);
     private NodeGroup group = NodeGroup.DEFAULT_GROUP;

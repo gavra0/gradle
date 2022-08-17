@@ -29,10 +29,15 @@ import static org.gradle.execution.plan.NodeSets.newSortedNodeSet;
  * Maintains the state for the dependencies of a node.
  */
 public class NodeDependencySet {
+    private final Node node;
     private NavigableSet<Node> orderedDependencies;
     private Set<Node> waitingFor;
-    private boolean hasFailures;
+    private boolean nodeCannotStart;
     private boolean pruned;
+
+    public NodeDependencySet(Node node) {
+        this.node = node;
+    }
 
     public NavigableSet<Node> getOrderedNodes() {
         if (orderedDependencies == null) {
@@ -57,8 +62,8 @@ public class NodeDependencySet {
     public void onNodeComplete(Node node) {
         if (waitingFor != null) {
             if (waitingFor.remove(node)) {
-                if (!node.isSuccessful()) {
-                    hasFailures = true;
+                if (preventsNodeFromStarting(node)) {
+                    nodeCannotStart = true;
                     waitingFor = null;
                 }
             }
@@ -73,8 +78,8 @@ public class NodeDependencySet {
                     Node node = iterator.next();
                     if (node.isComplete()) {
                         iterator.remove();
-                        if (!node.isSuccessful()) {
-                            hasFailures = true;
+                        if (preventsNodeFromStarting(node)) {
+                            nodeCannotStart = true;
                             waitingFor = null;
                             break;
                         }
@@ -83,12 +88,16 @@ public class NodeDependencySet {
             }
             pruned = true;
         }
-        if (hasFailures) {
+        if (nodeCannotStart) {
             return Node.DependenciesState.COMPLETE_AND_NOT_SUCCESSFUL;
         } else if (waitingFor == null || waitingFor.isEmpty()) {
             return Node.DependenciesState.COMPLETE_AND_SUCCESSFUL;
         } else {
             return Node.DependenciesState.NOT_COMPLETE;
         }
+    }
+
+    private boolean preventsNodeFromStarting(Node dependency) {
+        return !node.shouldContinueExecution(dependency);
     }
 }
