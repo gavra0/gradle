@@ -55,10 +55,17 @@ public class NodeDependencySet {
         if (waitingFor == null) {
             waitingFor = new HashSet<>();
         }
+        // It would be better to discard completed dependencies here, rather than collecting them and checking their state later
+        // However, it is not always known whether a dependency will be scheduled or not when it is added here.
+        // For example, the dependency may later be filtered from the graph and this set is never notified that it is complete
+        // This lifecycle could be simplified and allow the dependencies to be discarded at this point
         pruned = false;
         waitingFor.add(node);
     }
 
+    /**
+     * Notified when a node that is potentially a member of this set has completed.
+     */
     public void onNodeComplete(Node node) {
         if (waitingFor != null) {
             if (waitingFor.remove(node)) {
@@ -72,20 +79,8 @@ public class NodeDependencySet {
 
     public Node.DependenciesState getState() {
         if (!pruned) {
-            if (waitingFor != null) {
-                Iterator<Node> iterator = waitingFor.iterator();
-                while (iterator.hasNext()) {
-                    Node node = iterator.next();
-                    if (node.isComplete()) {
-                        iterator.remove();
-                        if (preventsNodeFromStarting(node)) {
-                            nodeCannotStart = true;
-                            waitingFor = null;
-                            break;
-                        }
-                    }
-                }
-            }
+            // See the comment in addDependency() above
+            discardCompletedNodes();
             pruned = true;
         }
         if (nodeCannotStart) {
@@ -94,6 +89,23 @@ public class NodeDependencySet {
             return Node.DependenciesState.COMPLETE_AND_SUCCESSFUL;
         } else {
             return Node.DependenciesState.NOT_COMPLETE;
+        }
+    }
+
+    private void discardCompletedNodes() {
+        if (waitingFor != null) {
+            Iterator<Node> iterator = waitingFor.iterator();
+            while (iterator.hasNext()) {
+                Node node = iterator.next();
+                if (node.isComplete()) {
+                    iterator.remove();
+                    if (preventsNodeFromStarting(node)) {
+                        nodeCannotStart = true;
+                        waitingFor = null;
+                        break;
+                    }
+                }
+            }
         }
     }
 
